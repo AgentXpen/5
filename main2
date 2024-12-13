@@ -1,0 +1,71 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <bitset>
+
+class HammingDecoder {
+public:
+    static std::string decode(const std::string& encodedMessage) {
+        if (encodedMessage.length() % 24 != 0) {
+            throw std::runtime_error("Некоректна довжина закодованого повідомлення");
+        }
+
+        std::string decodedMessage;
+      
+        for (size_t i = 0; i < encodedMessage.length(); i += 24) {
+            std::string byteGroup = encodedMessage.substr(i, 24);
+            std::string correctedByte = correctByte(byteGroup);
+            decodedMessage += decodeByteToChar(correctedByte);
+        }
+        
+        return decodedMessage;
+    }
+    
+private:
+    static std::string correctByte(const std::string& tripleBits) {
+        std::string correctedByte;
+
+        for (size_t i = 0; i < tripleBits.length(); i += 3) {
+            std::string triple = tripleBits.substr(i, 3);
+            correctedByte += correctTriple(triple);
+        }
+        
+        return correctedByte;
+    }
+    
+    static char correctTriple(const std::string& triple) {
+    
+        if (triple.length() != 3) {
+            throw std::runtime_error("Некоректна група бітів");
+        }
+        
+        int zeroCount = std::count(triple.begin(), triple.end(), '0');
+        int oneCount = std::count(triple.begin(), triple.end(), '1');
+        
+        return zeroCount > oneCount ? '0' : '1';
+    }
+    
+    static char decodeByteToChar(const std::string& byteString) {
+      
+        if (byteString.length() != 8) {
+            throw std::runtime_error("Некоректна довжина байту");
+        }
+        
+        std::bitset<8> bits(byteString);
+        return static_cast<char>(bits.to_ulong());
+    }
+};
+
+int main() {
+    std::string input = "100111111000111001000010000111111000000111001111000111110110111000010111";
+    
+    try {
+        std::string decoded = HammingDecoder::decode(input);
+        std::cout << "Decoded message: " << decoded << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Помилка: " << e.what() << std::endl;
+    }
+    
+    return 0;
+}
